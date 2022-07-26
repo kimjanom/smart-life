@@ -1,19 +1,16 @@
 package check;
 
 import com.vdurmont.emoji.EmojiParser;
+import dto.NineToTwSevDto;
 
-import javax.swing.text.StyledEditorKit;
-import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Date;
@@ -28,16 +25,26 @@ public class DataInspection {
             ResultSet resultSet = stmt.executeQuery("SELECT * FROM test.test WHERE NOT (writer_account is null AND contact is null)");
 
             while (resultSet.next()){
+                NineToTwSevDto nineToTwSevDto = new NineToTwSevDto();
                 if(checkUrl(resultSet.getString("url"))){
+                    String channel = resultSet.getString("channel");
                     String title = changeData(textLimit(emoji(resultSet.getString("title"))));
-//                    String content = changeData(emoji(resultSet.getString("content")));
                     String date=changeDate(resultSet.getString("write_date"));
-                    String time=changeTime(resultSet.getString("write_time"));
-                    try{
+                    String time =changeTime(resultSet.getString("write_time"));
+                    String writerName = nullCheck(resultSet.getString("writer_name"));
+                    String writerAccount = nullCheck(resultSet.getString("writer_account"));
+                    String contact = nullCheck(resultSet.getString("contact"));
+                    Array arrayList = resultSet.getArray("keyword_groups");
+                    nineToTwSevDto.setUrl(resultSet.getString("url"));
+                    nineToTwSevDto.setChanneel(channel);
+                    nineToTwSevDto.setTitle(title);
+                    nineToTwSevDto.setWriteDate(date);
+                    nineToTwSevDto.setWriteTime(time);
+                    nineToTwSevDto.setWriteName(writerName);
+                    nineToTwSevDto.setWriteAccount(writerAccount);
+                    nineToTwSevDto.setContact(contact);
+                    System.out.println(nineToTwSevDto.toString());
 
-                    }catch (NullPointerException e){
-
-                    }
                 }else{
                 }
             }
@@ -98,13 +105,13 @@ public class DataInspection {
                     break;
             }
         }catch (NullPointerException e){
-            System.out.println("널");
+//            System.out.println("널");
             return null;
         }
         try {
             Date timePar = timeParse.parse(time);
             timeC = timeFormat.format(timePar);
-            System.out.println(timeC);
+//            System.out.println(timeC);
         }
         catch (ParseException e){
             System.out.println(e);
@@ -134,5 +141,13 @@ public class DataInspection {
     public String changeData(String data){
        String replaceData = data.replace("\t"," ").replace("\r\n"," ").replace(",","^");
        return replaceData;
+    }
+    public String nullCheck(String data){
+        try {
+        }catch (NullPointerException e){
+            System.out.println(e);
+            return null;
+        }
+        return data;
     }
 }
